@@ -374,6 +374,24 @@ class IndexBasedProbabilityConnector(MapConnector):
 
 
 class DisplacementDependentProbabilityConnector(IndexBasedProbabilityConnector):
+    """
+    For each pair of pre-post cells, the connection probability depends on an function of the 
+    displacement between them.
+
+    Takes any of the standard :class:`Connector` optional arguments and, in
+    addition:
+
+        `disp_function`:
+            a function that takes the an array of displacements and calculates a
+            probability matrix from it. 
+        `allow_self_connections`:
+            if the connector is used to connect a Population to itself, this
+            flag determines whether a neuron is allowed to connect to itself,
+            or only to other neurons in the Population.
+        `rng`:
+            an :class:`RNG` instance used to evaluate whether connections exist
+    """        
+    parameter_names = ('allow_self_connections', 'disp_function')        
             
     class DisplacementExpression(IndexBasedExpression):
         """
@@ -741,6 +759,9 @@ class CSAConnector(Connector):
 class CloneConnector(MapConnector):
     """
     Connects cells with the same connectivity pattern as a previous projection.
+    
+        `reference_projection`:
+            the reference projection from which to clone the connectivity pattern from. 
     """
     parameter_names = ('reference_projection',)
 
