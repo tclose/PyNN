@@ -373,6 +373,62 @@ class IndexBasedProbabilityConnector(MapConnector):
         self._connect_with_map(projection, connection_map)
 
 
+class PositionBasedProbabilityConnector(IndexBasedProbabilityConnector):
+    """
+    For each pair of pre-post cells, the connection probability depends on an function of the 
+    displacement between them.
+
+    Takes any of the standard :class:`Connector` optional arguments and, in
+    addition:
+
+        `expression`:
+            a function that takes a source position and a target position array and calculates a
+            probability matrix from them.
+        `source_branch`, `target_branch`:
+            the part of the source and target cells to use as the reference points. This allows
+            multiple reference points on the cell to be used, eg. soma, dendrite extent.  If a cell
+            only has one set of positions then they do not need to be specified (typically a soma)
+        `allow_self_connections`:
+            if the connector is used to connect a Population to itself, this
+            flag determines whether a neuron is allowed to connect to itself,
+            or only to other neurons in the Population.
+        `rng`:
+            an :class:`RNG` instance used to evaluate whether connections exist
+    """        
+    parameter_names = ('allow_self_connections', 'expression', 'source_branch', 'target_branch')        
+            
+    class PositionBasedExpression(IndexBasedExpression):
+        """
+        A displacement based expression function used to determine the connection probability
+        and the value of variable connection parameters of a projection 
+        """
+        def __init__(self, expression, source_branch, target_branch):
+            """
+            `function`: a function that takes a 3xN numpy position matrix and maps each row
+                             (displacement) to a probability between 0 and 1
+            """
+            self.expression = expression
+            self.source_branch = source_branch
+            self.target_branch = target_branch
+                        
+        def __call__(self, i, j):
+            if self.source_branch:
+                source_positions = self.projection.pre._positions[self.source_branch][i]
+            else:
+                source_positions = self.projection.pre.positions[i]
+            if self.target_branch:
+                target_positions = self.projection.post._positions[self.target_branch][j]
+            else:
+                target_positions = self.projection.post.positions[j]                
+            return self._function(source_positions, target_positions)             
+            
+    def __init__(self, expression, source_branch=None, target_branch=None, 
+                 allow_self_connections=True, rng=None, safe=True, callback=None):
+        super(DisplacementDependentProbabilityConnector, self).__init__(
+                self.PositionBasedExpression(expression, source_branch, target_branch), 
+                allow_self_connections=allow_self_connections, rng=rng, callback=callback)
+
+
 class DisplacementDependentProbabilityConnector(IndexBasedProbabilityConnector):
             
     class DisplacementExpression(IndexBasedExpression):
