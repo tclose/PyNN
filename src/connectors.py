@@ -62,6 +62,39 @@ class IndexBasedExpression(object):
     def __call__(self, i, j):
         raise NotImplementedError
 
+            
+class PositionBasedExpression(IndexBasedExpression):
+    """
+    A displacement based prob_expression function used to determine the connection probability
+    and the value of variable connection parameters of a projection 
+    """
+    def __init__(self, expression, source_branch, target_branch):
+        """
+        `function`: a function that takes a 3xN numpy position matrix and maps each row
+                         (displacement) to a probability between 0 and 1
+        """
+        self.expression = expression
+        self.source_branch = source_branch
+        self.target_branch = target_branch
+                    
+    def __call__(self, i, j):
+        # At this point the _structures member has not been included in the population class
+        # and so will throw an AttributeError exception
+        try:
+            if self.source_branch:
+                source_positions = self.projection.pre._structures[self.source_branch][i]
+            else:
+                source_positions = self.projection.pre.positions.T[i]
+            if self.target_branch:
+                target_positions = self.projection.post._structures[self.target_branch][j]
+            else:
+                target_positions = self.projection.post.positions.T[j]
+        except AttributeError:
+            raise NotImplementedError("Source and target branches haven't been implemented in "
+                                      "the BasePopulation class as required by "
+                                      "PositionBasedExpression yet")                
+        return self.expression(source_positions, target_positions)        
+
 
 class Connector(object):
     """
@@ -398,42 +431,10 @@ class PositionBasedProbabilityConnector(IndexBasedProbabilityConnector):
     """        
     parameter_names = ('allow_self_connections', 'prob_expression', 'source_branch', 'target_branch')        
             
-    class PositionBasedProbabilityExpression(IndexBasedExpression):
-        """
-        A displacement based prob_expression function used to determine the connection probability
-        and the value of variable connection parameters of a projection 
-        """
-        def __init__(self, prob_expression, source_branch, target_branch):
-            """
-            `function`: a function that takes a 3xN numpy position matrix and maps each row
-                             (displacement) to a probability between 0 and 1
-            """
-            self.prob_expression = prob_expression
-            self.source_branch = source_branch
-            self.target_branch = target_branch
-                        
-        def __call__(self, i, j):
-            # At this point the _structures member has not been included in the population class
-            # and so will throw an AttributeError exception
-            try:
-                if self.source_branch:
-                    source_positions = self.projection.pre._structures[self.source_branch][i]
-                else:
-                    source_positions = self.projection.pre.positions.T[i]
-                if self.target_branch:
-                    target_positions = self.projection.post._structures[self.target_branch][j]
-                else:
-                    target_positions = self.projection.post.positions.T[j]
-            except AttributeError:
-                raise NotImplementedError("Source and target branches haven't been implemented for "
-                                          "the PositionBasedProbabilityConnector yet")                
-            return self.prob_expression(source_positions.T, target_positions.T)             
-            
     def __init__(self, prob_expression, source_branch=None, target_branch=None, 
                  allow_self_connections=True, rng=None, safe=True, callback=None):
-        super(DisplacementDependentProbabilityConnector, self).__init__(
-                self.PositionBasedProbabilityExpression(prob_expression, source_branch, 
-                                                        target_branch), 
+        super(PositionBasedProbabilityConnector, self).__init__(
+                self.PositionBasedExpression(prob_expression, source_branch, target_branch), 
                 allow_self_connections=allow_self_connections, rng=rng, callback=callback)
 
 
