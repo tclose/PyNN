@@ -369,16 +369,16 @@ class PerturbedGrid2D(Grid2D):
 
     def generate_positions(self, n):
         positions =  super(PerturbedGrid2D, self).generate_positions(n)
-        positions[dim_i,:] += self._perturbations(n)
+        positions += self._perturbations(n)
         return positions
 
     def _perturbations(self, n):
-        perturbations = numpy.empty(3, n)
-        for dim_i, perturber in enumerate(self.perturb_x, self.perturb_y, self.perturb_z):
+        perturbations = numpy.empty((3, n))
+        for i, perturber in enumerate((self.perturb_x, self.perturb_y, self.perturb_z)):
             if isinstance(perturber, RandomDistribution):
-                perturbations[dim_i, :] = perturber.next(n, mask_local=False)
+                perturbations[i, :] = perturber.next(n, mask_local=False)
             else:
-                perturbations[dim_i, :] = perturber
+                perturbations[i, :] = perturber
         return perturbations
                 
 
