@@ -215,7 +215,7 @@ class AllToAllConnector(MapConnector):
         Create a new connector.
         """
         Connector.__init__(self, safe, callback)
-        assert isinstance(allow_self_connections, bool)
+        assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
         self.allow_self_connections = allow_self_connections
 
     def connect(self, projection):
@@ -331,7 +331,7 @@ class IndexBasedProbabilityConnector(MapConnector):
     Takes any of the standard :class:`Connector` optional arguments and, in
     addition:
 
-        `index_expression`:
+        `expression`:
             a function that takes the two cell indices as inputs and calculates the
             probability matrix from it. 
         `allow_self_connections`:
@@ -341,27 +341,27 @@ class IndexBasedProbabilityConnector(MapConnector):
         `rng`:
             an :class:`RNG` instance used to evaluate whether connections exist
     """
-    parameter_names = ('allow_self_connections', 'index_expression')
+    parameter_names = ('allow_self_connections', 'expression')
 
-    def __init__(self, index_expression, allow_self_connections=True,
+    def __init__(self, expression, allow_self_connections=True,
                  rng=None, safe=True, callback=None):
         """
         Create a new connector.
         """
         Connector.__init__(self, safe, callback)
-        assert callable(index_expression)
-        assert isinstance(index_expression, IndexBasedExpression)
+        assert callable(expression)
+        assert isinstance(expression, IndexBasedExpression)
         assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
-        self.index_expression = index_expression
+        self.expression = expression
         self.allow_self_connections = allow_self_connections
         self.rng = _get_rng(rng)
 
     def connect(self, projection):
         # The index function is copied so as to avoid the connector being altered by the "connect"
         # function, which is probably unexpected behaviour.
-        index_expression = copy(self.index_expression)
-        index_expression.projection = projection
-        probability_map = LazyArray(index_expression, projection.shape) 
+        expression = copy(self.expression)
+        expression.projection = projection
+        probability_map = LazyArray(expression, projection.shape) 
         random_map = LazyArray(RandomDistribution('uniform', (0, 1), rng=self.rng),
                                projection.shape)
         connection_map = random_map < probability_map
