@@ -21,6 +21,14 @@ try:
 except NESTError:
     raise Exception("NEST built without NumPy support. Try rebuilding NEST after installing NumPy.")
 
+
+# ==============================================================================
+#   Functions returning information about the simulation state
+# ==============================================================================
+
+get_current_time, get_time_step, get_min_delay, get_max_delay, \
+            num_processes, rank = common.build_state_queries(simulator)
+
 #if recording.MPI and (nest.Rank() != recording.mpi_comm.rank):
 #    raise Exception("MPI not working properly. Please make sure you import pyNN.nest before pyNN.random.")
 
@@ -137,13 +145,6 @@ run = common.build_run(simulator)
 reset = common.build_reset(simulator)
 
 initialize = common.initialize
-
-# ==============================================================================
-#   Functions returning information about the simulation state
-# ==============================================================================
-
-get_current_time, get_time_step, get_min_delay, get_max_delay, \
-            num_processes, rank = common.build_state_queries(simulator)
 
 
 # ==============================================================================
