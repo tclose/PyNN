@@ -26,7 +26,7 @@ Classes:
 import numpy
 import math
 from operator import and_
-from pyNN.random import NumpyRNG
+from pyNN.random import NumpyRNG, RandomDistribution
 from pyNN import descriptions
 import logging
 
@@ -337,6 +337,85 @@ class Grid3D(BaseStructure):
         else:
             raise NotImplementedError
         generate_positions.__doc__ = BaseStructure.generate_positions.__doc__
+
+
+class PerturbedGrid2D(Grid2D):
+    """
+    Represents a structure with neurons distributed on a 2D grid.
+
+    Arguments:
+        `dx`, `dy`:
+            distances between points in the x, y directions.
+        `x0`, `y0`, `z0`:
+            coordinates of the starting corner of the grid.
+        `perturb_x`, `perturb_y`, `perturb_z`:
+            random distribution objects that independently perturb the positions on the grid
+        `aspect_ratio`:
+            ratio of the number of grid points per side (not the ratio of the
+            side lengths, unless ``dx == dy``)
+        `fill_order`:
+            may be 'sequential' or 'random'
+    """
+    parameter_names = ("aspect_ratio", "dx", "dy", "x0", "y0", "z", "perturb_x", "perturb_y", 
+                       "perturb_z", "fill_order")
+
+    def __init__(self, aspect_ratio=1.0, dx=1.0, dy=1.0, x0=0.0, y0=0.0, z0=0, perturb_x=0, 
+                 perturb_y=0, perturb_z=0, fill_order="sequential", rng=None):
+        super(PerturbedGrid2D, self).__init__(aspect_ratio=aspect_ratio, dx=dx, dy=dy, x0=x0, y0=y0,
+                                              z=z0, fill_order="sequential", rng=rng)
+        self.perturb_x = perturb_x
+        self.perturb_y = perturb_y
+        self.perturb_z = perturb_z
+
+    def generate_positions(self, n):
+        positions =  super(PerturbedGrid2D, self).generate_positions(n)
+        positions += self._perturbations(n)
+        return positions
+
+    def _perturbations(self, n):
+        perturbations = numpy.empty((3, n))
+        for i, perturber in enumerate((self.perturb_x, self.perturb_y, self.perturb_z)):
+            if isinstance(perturber, RandomDistribution):
+                perturbations[i, :] = perturber.next(n, mask_local=False)
+            else:
+                perturbations[i, :] = perturber
+        return perturbations
+                
+
+
+class PerturbedGrid3D(Grid3D, PerturbedGrid2D):
+    """
+    Represents a structure with neurons distributed on a 2D grid.
+
+    Arguments:
+        `dx`, `dy`, `dz`:
+            distances between points in the x, y directions.
+        `x0`, `y0`, `z0`:
+            coordinates of the starting corner of the grid.
+        `perturb_x`, `perturb_y`, `perturb_z`:
+            random distribution objects that independently perturb the positions on the grid
+        `aspect_ratioXY`, `aspect_ratioXZ`:
+            ratios of the number of grid points per side (not the ratio of the
+            side lengths, unless ``dx == dy == dz``)
+        `fill_order`:
+            may be 'sequential' or 'random'
+    """
+    parameter_names = ("aspect_ratioXY", "aspect_ratioXZ", "dx", "dy", "dz", "x0", "y0", "z0", 
+                       "perturb_x", "perturb_y", "perturb_z", "fill_order")
+
+    def __init__(self, aspect_ratioXY=1.0, aspect_ratioXZ=1.0, dx=1.0, dy=1.0,  dz=1.0, x0=0.0, 
+                 y0=0.0, z0=0, perturb_x=0, perturb_y=0, perturb_z=0, fill_order="sequential", 
+                 rng=None):
+        Grid3D.__init__(aspect_ratioXY=aspect_ratioXY, aspect_ratioXZ=aspect_ratioXZ, dx=dx, dy=dy, 
+                        x0=x0, y0=y0, z0=z0, fill_order="sequential", rng=rng)
+        self.perturb_x = perturb_x
+        self.perturb_y = perturb_y
+        self.perturb_z = perturb_z
+
+    def generate_positions(self, n):
+        positions =  Grid3D.generate_positions(self, n)
+        positions += self._perturbations(n)
+        return positions 
 
 
 class Shape(object):

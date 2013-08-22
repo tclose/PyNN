@@ -14,7 +14,7 @@ from itertools import repeat
 from pyNN import common, errors, core, recording
 from pyNN.random import RandomDistribution
 from pyNN.space import Space
-from . import simulator
+from . import simulator, get_min_delay
 from .standardmodels.synapses import StaticSynapse
 
 logger = logging.getLogger("PyNN")
@@ -106,6 +106,11 @@ class Projection(common.Projection):
         if hasattr(self.post.celltype, "receptor_scale"):  # this is a bit of a hack
             weights *= self.post.celltype.receptor_scale   # needed for the Izhikevich model
         delays = connection_parameters.pop('delay')
+        min_delay = get_min_delay()
+        if isinstance(delays, float) and delays < min_delay:
+            delays = min_delay
+        elif isinstance(delays, numpy.ndarray):
+            delays[delays < min_delay] = min_delay
         if postsynaptic_cell.celltype.standard_receptor_type:
             try:
                 nest.ConvergentConnect(presynaptic_cells.astype(int).tolist(),
