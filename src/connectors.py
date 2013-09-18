@@ -48,6 +48,10 @@ class IndexBasedExpression(object):
     determine their value instead of just the the distance between the cells
     """
        
+    def __init__(self):
+        # Minimum values are required for delays, so the option to set them is initialised here
+        self.min_value = None
+       
     @property    
     def projection(self):
         try:
@@ -58,9 +62,26 @@ class IndexBasedExpression(object):
     @projection.setter        
     def projection(self, projection): 
         self._projection = projection
+        
+    def set_min_value(self, min_value):
+        """
+        Set the minimum value produced by the expression. Smaller values will be increased to this 
+        value. Is used primarily for setting the minimum delay in Synapses
+        
+        `min_value` - the minimum value for the expression (smaller values increased to this value)
+        """
+        self.min_value = min_value
                     
     def __call__(self, i, j):
+        """
+        Should be overridden by the derived class, ensuring that 'validate_values' is called on the
+        the generated values before then are returned
+        """
         raise NotImplementedError
+    
+    def validate_values(self, values):
+        if self.min_value is not None:
+            values[values < self.min_value] = self.min_value       
 
 
 class Connector(object):

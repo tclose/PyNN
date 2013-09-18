@@ -107,10 +107,8 @@ class AdditiveWeightDependence(BaseSynapse, synapses.AdditiveWeightDependence):
     translations = build_translations(
         ('w_max',     'wmax'),
         ('w_min',     'wmin'),
-        ('A_plus',    'aLTP'),
-        ('A_minus',   'aLTD'),
     )
-    possible_models = set(['StdwaSA',])
+    possible_models = set(['StdwaSA', 'StdwaVogels2011'])
 
 
 class MultiplicativeWeightDependence(BaseSynapse, synapses.MultiplicativeWeightDependence):
@@ -119,8 +117,6 @@ class MultiplicativeWeightDependence(BaseSynapse, synapses.MultiplicativeWeightD
     translations = build_translations(
         ('w_max',     'wmax'),
         ('w_min',     'wmin'),
-        ('A_plus',    'aLTP'),
-        ('A_minus',   'aLTD'),
     )
     possible_models = set(['StdwaSoft',])
 
@@ -131,8 +127,6 @@ class AdditivePotentiationMultiplicativeDepression(BaseSynapse, synapses.Additiv
     translations = build_translations(
         ('w_max',     'wmax'),
         ('w_min',     'wmin'),
-        ('A_plus',    'aLTP'),
-        ('A_minus',   'aLTD'),
     )
     possible_models = set(['StdwaGuetig'])
     extra_parameters = {
@@ -147,8 +141,6 @@ class GutigWeightDependence(BaseSynapse, synapses.GutigWeightDependence):
     translations = build_translations(
         ('w_max',     'wmax'),
         ('w_min',     'wmin'),
-        ('A_plus',    'aLTP'),
-        ('A_minus',   'aLTD'),
         ('mu_plus',   'muLTP'),
         ('mu_minus',  'muLTD'),
     )
@@ -161,5 +153,19 @@ class SpikePairRule(BaseSynapse, synapses.SpikePairRule):
     translations = build_translations(
         ('tau_plus',  'tauLTP'),
         ('tau_minus', 'tauLTD'),
+        ('A_plus',    'aLTP'),
+        ('A_minus',   'aLTD'),
+
     )
     possible_models = set(['StdwaSA', 'StdwaSoft', 'StdwaGuetig'])
+
+
+class Vogels2011Rule(synapses.Vogels2011Rule):
+    __doc__ = synapses.Vogels2011Rule.__doc__
+    
+    translations = build_translations(
+        ('tau',  'tau'),
+        ('eta', 'eta'),
+        ('rho', 'rho'),
+    )
+    possible_models = set(['StdwaVogels2011'])
