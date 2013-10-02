@@ -89,6 +89,9 @@ class Recorder(recording.Recorder):
         if variable in recording.UNITS_MAP:
             return recording.UNITS_MAP[variable]
         else:
+            # ADDED by TGC This is for NineLine references to segments which use the '{}' notation
+            if variable.startswith('{'):
+                variable = variable[variable.find('}')+1:]
             # works with NEURON 7.3, not with 7.1, 7.2 not tested
             nrn_units = h.units(variable.split('.')[-1])
             pq_units = nrn_units.replace("2", "**2").replace("3", "**3")
