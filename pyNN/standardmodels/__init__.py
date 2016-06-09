@@ -66,7 +66,7 @@ class StandardModelType(models.BaseModelType):
         translated from the standard PyNN names and units to simulator-specific
         ("native") names and units.
         """
-        return self.translate(self.parameter_space)
+        return self.parameter_space
 
     def translate(self, parameters):
         """Translate standardized model parameters to simulator-specific parameters."""

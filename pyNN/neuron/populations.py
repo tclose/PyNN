@@ -49,7 +49,7 @@ class PopulationMixin(object):
             if isinstance(initial_values.base_value, RandomDistribution) and initial_values.base_value.rng.parallel_safe:
                 local_values = initial_values.evaluate()[self._mask_local]
             else:
-                local_values = initial_values[self._mask_local]            
+                local_values = initial_values[self._mask_local]
             for cell, value in zip(self, local_values):
                 setattr(cell._cell, "%s_init" % variable, value)
 
