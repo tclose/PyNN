@@ -49,10 +49,10 @@ if args.plot:
     stim[:100].record('spikes')
     exc = net.populations["Exc"]
     exc.sample(50).record("spikes")
-    exc.sample(3).record(["nrn_v", "syn_a"])
+    exc.sample(3).record(["v__nrn", "a__syn"])
     inh = net.populations["Inh"]
     inh.sample(50).record("spikes")
-    inh.sample(3).record(["nrn_v", "syn_a"])
+    inh.sample(3).record(["v__nrn", "a__syn"])
 else:
     all_neurons = net.assemblies["All"]
     # all.sample(50).record("spikes")
