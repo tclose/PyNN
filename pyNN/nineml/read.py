@@ -205,11 +205,16 @@ class Network(object):
                     raise NotImplementedError
                 elif pc.receiver_role == 'response' and pc.sender_role == 'plasticity':
                     synapse_name = _generate_variable_name(pc.receiver.name)
-                    weight_vars[synapse_name] = "%s_%s" % (synapse_name, pc.receive_port_name)
+                    weight_vars[synapse_name] = "%s__%s" % (pc.receive_port_name, synapse_name)
+                    exposures.append((synapse_name, pc.receive_port_name))
+                elif pc.receiver_role == 'response' and pc.sender_role == 'pre':
+                    synapse_name = _generate_variable_name(pc.receiver.name)
                     exposures.append((synapse_name, pc.receive_port_name))
                 else:
                     raise Exception("Unexpected")
             response_components[synapse_name] = self.psr_map[nineml_population.name]['response_component']
+        for port in neuron_model.send_ports:
+            exposures.append((neuron_namespace, port.name))
         subnodes = {neuron_namespace: neuron_model}
         subnodes.update(synapse_models)
         combined_model = nineml.MultiDynamics(name=_generate_variable_name(nineml_population.name),

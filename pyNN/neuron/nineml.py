@@ -96,7 +96,6 @@ def _compile_nmodl(nineml_component, weight_variables, hierarchical_mode=None): 
     mod_filename = nineml_component.name + ".mod"
     write_nmodldirect(component=nineml_component, mod_filename=mod_filename, weight_variables=weight_variables)
     #write_nmodl(xml_file, weight_variables) # weight variables should really come from xml file
-
     print("Running 'nrnivmodl' from %s" % wdir)
     import nineml2nmodl
     call_nrnivmodl()
